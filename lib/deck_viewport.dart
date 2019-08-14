@@ -217,7 +217,8 @@ class RenderDeckViewport extends RenderBox
     markNeedsLayout();
   }
 
-  double get virtualItemExtent => _virtualItemExtent ?? (size.height / maxVisibleItemCount);
+  double get virtualItemExtent =>
+      _virtualItemExtent ?? (size.height / maxVisibleItemCount);
   double _virtualItemExtent;
   set virtualItemExtent(double value) {
     if (value == null || value < 0 || value == _virtualItemExtent) return;
@@ -278,7 +279,8 @@ class RenderDeckViewport extends RenderBox
 
   @override
   void setupParentData(RenderObject child) {
-    if (child.parentData is! DeckParentData) child.parentData = DeckParentData();
+    if (child.parentData is! DeckParentData)
+      child.parentData = DeckParentData();
   }
 
   @override
@@ -338,12 +340,14 @@ class RenderDeckViewport extends RenderBox
 
   @override
   double computeMinIntrinsicWidth(double height) {
-    return _getIntrinsicCrossAxis((RenderBox child) => child.getMinIntrinsicWidth(height));
+    return _getIntrinsicCrossAxis(
+        (RenderBox child) => child.getMinIntrinsicWidth(height));
   }
 
   @override
   double computeMaxIntrinsicWidth(double height) {
-    return _getIntrinsicCrossAxis((RenderBox child) => child.getMaxIntrinsicWidth(height));
+    return _getIntrinsicCrossAxis(
+        (RenderBox child) => child.getMaxIntrinsicWidth(height));
   }
 
   @override
@@ -385,11 +389,13 @@ class RenderDeckViewport extends RenderBox
   }
 
   /// Returns the index of the child at the given offset.
-  int scrollOffsetToIndex(double scrollOffset) => (scrollOffset / virtualItemExtent - firstItemOffsetIndex).floor();
+  int scrollOffsetToIndex(double scrollOffset) =>
+      (scrollOffset / virtualItemExtent - firstItemOffsetIndex).floor();
 
   /// Returns the scroll offset of the child with the given index.
   double indexToRealScrollOffset(int index) => (index) * virtualItemExtent;
-  double indexToScrollOffset(int index) => (index + firstItemOffsetIndex) * virtualItemExtent;
+  double indexToScrollOffset(int index) =>
+      (index + firstItemOffsetIndex) * virtualItemExtent;
 
   void _createChild(int index, {RenderBox after}) {
     invokeLayoutCallback<BoxConstraints>((BoxConstraints constraints) {
@@ -446,17 +452,23 @@ class RenderDeckViewport extends RenderBox
     // The index range that we want to spawn children. We find indexes that
     // are in the interval [firstVisibleOffset, lastVisibleOffset).
     int targetFirstIndex = scrollOffsetToIndex(firstVisibleOffset);
-    int realTargetFirstIndex = targetFirstIndex.clamp(0, targetFirstIndex.abs());
+    int realTargetFirstIndex =
+        targetFirstIndex.clamp(0, targetFirstIndex.abs());
 
     int targetLastIndex = scrollOffsetToIndex(lastVisibleOffset);
     // Because we exclude lastVisibleOffset, if there's a new child starting at
     // that offset, it is removed.
-    if (targetLastIndex * virtualItemExtent == lastVisibleOffset) targetLastIndex--;
+    if (targetLastIndex * virtualItemExtent == lastVisibleOffset)
+      targetLastIndex--;
 
     // Validates the target index range.
-    while (!childManager.childExistsAt(targetFirstIndex) && targetFirstIndex <= targetLastIndex) targetFirstIndex++;
-    while (((targetLastIndex + firstItemOffsetIndex) * virtualItemExtent - firstVisibleOffset) > visibleHeight ||
-        (!childManager.childExistsAt(targetLastIndex) && targetFirstIndex <= targetLastIndex)) targetLastIndex--;
+    while (!childManager.childExistsAt(targetFirstIndex) &&
+        targetFirstIndex <= targetLastIndex) targetFirstIndex++;
+    while (((targetLastIndex + firstItemOffsetIndex) * virtualItemExtent -
+                firstVisibleOffset) >
+            visibleHeight ||
+        (!childManager.childExistsAt(targetLastIndex) &&
+            targetFirstIndex <= targetLastIndex)) targetLastIndex--;
 
     // If it turns out there's no children to layout, we remove old children and
     // return.
@@ -474,7 +486,9 @@ class RenderDeckViewport extends RenderBox
     //    list => this case becomes the other case.
 
     // Case when there is no intersection.
-    if (childCount > 0 && (indexOf(firstChild) > targetLastIndex || indexOf(lastChild) < realTargetFirstIndex)) {
+    if (childCount > 0 &&
+        (indexOf(firstChild) > targetLastIndex ||
+            indexOf(lastChild) < realTargetFirstIndex)) {
       while (firstChild != null) _destroyChild(firstChild);
     }
 
@@ -524,19 +538,25 @@ class RenderDeckViewport extends RenderBox
     // we don't know whether there's a limit yet, and set the dimension to the
     // estimated value. Otherwise, we set the dimension limited to our target
     // range.
-    final double minScrollExtent = childManager.childExistsAt(targetFirstIndex - 1)
-        ? _minEstimatedScrollExtent
-        : indexToRealScrollOffset(realTargetFirstIndex);
-    final double maxScrollExtent = childManager.childExistsAt(targetLastIndex + 1)
-        ? _maxEstimatedScrollExtent
-        : indexToRealScrollOffset(targetLastIndex);
+    final double minScrollExtent =
+        childManager.childExistsAt(targetFirstIndex - 1)
+            ? _minEstimatedScrollExtent
+            : indexToRealScrollOffset(realTargetFirstIndex);
+    final double maxScrollExtent =
+        childManager.childExistsAt(targetLastIndex + 1)
+            ? _maxEstimatedScrollExtent
+            : indexToRealScrollOffset(targetLastIndex);
     offset.applyContentDimensions(minScrollExtent, maxScrollExtent);
   }
 
   bool _shouldClipAtCurrentOffset() {
-    final double highestUntransformedPaintY = _getUntransformedPaintingCoordinateY(0.0);
+    final double highestUntransformedPaintY =
+        _getUntransformedPaintingCoordinateY(0.0);
     return highestUntransformedPaintY < 0.0 ||
-        size.height < highestUntransformedPaintY + _maxEstimatedScrollExtent + virtualItemExtent;
+        size.height <
+            highestUntransformedPaintY +
+                _maxEstimatedScrollExtent +
+                virtualItemExtent;
   }
 
   @override
@@ -561,7 +581,8 @@ class RenderDeckViewport extends RenderBox
     DeckParentData childParentData = childToPaint?.parentData;
 
     while (childParentData != null) {
-      final matrix4 = _paintTransformedChild(childToPaint, context, offset, childParentData.offset);
+      final matrix4 = _paintTransformedChild(
+          childToPaint, context, offset, childParentData.offset);
       if (childParentData != null) {
         childParentData.paintTransform = matrix4;
       }
@@ -602,9 +623,9 @@ class RenderDeckViewport extends RenderBox
 
     // final Offset offsetToTop = Offset(untransformedPaintingCoordinates.dx, untransformedPaintingCoordinates.dy);
     var scale = (itemScaleMin + (1 - itemScaleMin) * fractionalY);
-    final matrix4 =
-        Matrix4.translationValues(visibleWidth / 2 * (1 - scale), math.pow(fractionalY, layoutPow) * visibleHeight, 1)
-          ..scale(scale, scale);
+    final matrix4 = Matrix4.translationValues(visibleWidth / 2 * (1 - scale),
+        math.pow(fractionalY, layoutPow) * visibleHeight, 1)
+      ..scale(scale, scale);
     context.pushTransform(
       true,
       offset,
@@ -664,7 +685,8 @@ class RenderDeckViewport extends RenderBox
   }
 
   @override
-  RevealedOffset getOffsetToReveal(RenderObject target, double alignment, {Rect rect}) {
+  RevealedOffset getOffsetToReveal(RenderObject target, double alignment,
+      {Rect rect}) {
     // `target` is only fully revealed when in the selected/center position. Therefore,
     // this method always returns the offset that shows `target` in the center position,
     // which is the same offset for all `alignment` values.
@@ -676,7 +698,8 @@ class RenderDeckViewport extends RenderBox
     while (child.parent != this) child = child.parent;
 
     final DeckParentData parentData = child.parentData;
-    final double targetOffset = parentData.offset.dy; // the so-called "centerPosition"
+    final double targetOffset =
+        parentData.offset.dy; // the so-called "centerPosition"
 
     final Matrix4 transform = target.getTransformTo(this);
     final Rect bounds = MatrixUtils.transformRect(transform, rect);
@@ -693,11 +716,13 @@ class RenderDeckViewport extends RenderBox
   }) {
     if (descendant != null) {
       // Shows the descendant in the selected/center position.
-      final RevealedOffset revealedOffset = getOffsetToReveal(descendant, 0.5, rect: rect);
+      final RevealedOffset revealedOffset =
+          getOffsetToReveal(descendant, 0.5, rect: rect);
       if (duration == Duration.zero) {
         offset.jumpTo(revealedOffset.offset);
       } else {
-        offset.animateTo(revealedOffset.offset, duration: duration, curve: curve);
+        offset.animateTo(revealedOffset.offset,
+            duration: duration, curve: curve);
       }
       rect = revealedOffset.rect;
     }

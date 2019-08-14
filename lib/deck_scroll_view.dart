@@ -110,7 +110,8 @@ class DeckChildListDelegate extends DeckChildDelegate {
 /// conditions.
 class DeckChildLoopingListDelegate extends DeckChildDelegate {
   /// Constructs the delegate from a concrete list of children.
-  DeckChildLoopingListDelegate({@required this.children}) : assert(children != null);
+  DeckChildLoopingListDelegate({@required this.children})
+      : assert(children != null);
 
   /// The list containing all children that can be supplied.
   final List<Widget> children;
@@ -124,7 +125,8 @@ class DeckChildLoopingListDelegate extends DeckChildDelegate {
   @override
   Widget build(BuildContext context, int index) {
     if (children.isEmpty) return null;
-    return IndexedSemantics(child: children[index % children.length], index: index);
+    return IndexedSemantics(
+        child: children[index % children.length], index: index);
   }
 
   @override
@@ -167,7 +169,9 @@ class DeckChildBuilderDelegate extends DeckChildDelegate {
   Widget build(BuildContext context, int index) {
     if (childCount == null) {
       final Widget child = builder(context, index);
-      return child == null ? null : IndexedSemantics(child: child, index: index);
+      return child == null
+          ? null
+          : IndexedSemantics(child: child, index: index);
     }
     if (index < 0 || index >= childCount) return null;
     return IndexedSemantics(child: builder(context, index), index: index);
@@ -175,7 +179,8 @@ class DeckChildBuilderDelegate extends DeckChildDelegate {
 
   @override
   bool shouldRebuild(covariant DeckChildBuilderDelegate oldDelegate) {
-    return builder != oldDelegate.builder || childCount != oldDelegate.childCount;
+    return builder != oldDelegate.builder ||
+        childCount != oldDelegate.childCount;
   }
 }
 
@@ -388,7 +393,9 @@ class _DeckScrollViewState extends State<DeckScrollView> {
 
   @override
   Widget build(BuildContext context) {
-    scrollController = widget.primary ? PrimaryScrollController.of(context) : widget.controller;
+    scrollController = widget.primary
+        ? PrimaryScrollController.of(context)
+        : widget.controller;
     return NotificationListener<ScrollNotification>(
       onNotification: (ScrollNotification notification) {
         if (notification.depth == 0 &&
@@ -399,7 +406,8 @@ class _DeckScrollViewState extends State<DeckScrollView> {
           final int currentItemIndex = metrics.itemIndex;
           if (currentItemIndex != _lastReportedItemIndex) {
             _lastReportedItemIndex = currentItemIndex;
-            final int trueIndex = widget.childDelegate.trueIndexOf(currentItemIndex);
+            final int trueIndex =
+                widget.childDelegate.trueIndexOf(currentItemIndex);
             widget.onSelectedItemChanged(trueIndex);
           }
         }
@@ -448,7 +456,8 @@ class DeckElement extends RenderObjectElement implements DeckChildManager {
 
   /// The map containing all active child elements. SplayTreeMap is used so that
   /// we have all elements ordered and iterable by their keys.
-  final SplayTreeMap<int, Element> _childElements = SplayTreeMap<int, Element>();
+  final SplayTreeMap<int, Element> _childElements =
+      SplayTreeMap<int, Element>();
 
   @override
   void update(DeckViewport newWidget) {
@@ -457,8 +466,8 @@ class DeckElement extends RenderObjectElement implements DeckChildManager {
     final DeckChildDelegate newDelegate = newWidget.childDelegate;
     final DeckChildDelegate oldDelegate = oldWidget.childDelegate;
     if (newDelegate != oldDelegate &&
-        (newDelegate.runtimeType != oldDelegate.runtimeType || newDelegate.shouldRebuild(oldDelegate)))
-      performRebuild();
+        (newDelegate.runtimeType != oldDelegate.runtimeType ||
+            newDelegate.shouldRebuild(oldDelegate))) performRebuild();
   }
 
   @override
@@ -474,7 +483,8 @@ class DeckElement extends RenderObjectElement implements DeckChildManager {
     final int lastIndex = _childElements.lastKey();
 
     for (int index = firstIndex; index <= lastIndex; ++index) {
-      final Element newChild = updateChild(_childElements[index], retrieveWidget(index), index);
+      final Element newChild =
+          updateChild(_childElements[index], retrieveWidget(index), index);
       if (newChild != null) {
         _childElements[index] = newChild;
       } else {
@@ -489,7 +499,8 @@ class DeckElement extends RenderObjectElement implements DeckChildManager {
   /// will be cached. However when the element is rebuilt, the cache will be
   /// cleared.
   Widget retrieveWidget(int index) {
-    return _childWidgets.putIfAbsent(index, () => widget.childDelegate.build(this, index));
+    return _childWidgets.putIfAbsent(
+        index, () => widget.childDelegate.build(this, index));
   }
 
   @override
@@ -500,7 +511,8 @@ class DeckElement extends RenderObjectElement implements DeckChildManager {
     owner.buildScope(this, () {
       final bool insertFirst = after == null;
       assert(insertFirst || _childElements[index - 1] != null);
-      final Element newChild = updateChild(_childElements[index], retrieveWidget(index), index);
+      final Element newChild =
+          updateChild(_childElements[index], retrieveWidget(index), index);
       if (newChild != null) {
         _childElements[index] = newChild;
       } else {
@@ -652,7 +664,8 @@ class DeckViewport extends RenderObjectWidget {
   }
 
   @override
-  void updateRenderObject(BuildContext context, RenderDeckViewport renderObject) {
+  void updateRenderObject(
+      BuildContext context, RenderDeckViewport renderObject) {
     renderObject
       ..offset = offset
       ..layoutPow = layoutPow
