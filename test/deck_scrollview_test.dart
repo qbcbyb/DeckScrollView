@@ -1,6 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:deck_scrollview/deck_scrollview.dart';
+import 'package:deck_scrollview/deck_scroll_view.dart';
 
 void main() {
   const MethodChannel channel = MethodChannel('deck_scrollview');
@@ -15,7 +15,4 @@ void main() {
     channel.setMockMethodCallHandler(null);
   });
 
-  test('getPlatformVersion', () async {
-    expect(await DeckScrollview.platformVersion, '42');
-  });
 }

@@ -1,5 +1,5 @@
 name: deck_scrollview
-description: A scrollview like recent task view of system in Android.
+description: DeckScrollView is a scrollview like recent task view of system in Android.
 version: 0.1.0
 author: Hydrant <qbcbyb@sina.com>
 homepage: https://github.com/qbcbyb/DeckScrollView
