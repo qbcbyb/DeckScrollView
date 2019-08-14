@@ -68,4 +68,4 @@ class _MyAppState extends State<MyApp> {
 }
 ```
 
-![normal-pager](demo.gif)
+![example](./demo.gif)
