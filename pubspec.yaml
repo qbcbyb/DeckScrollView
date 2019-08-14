@@ -1,8 +1,8 @@
 name: deck_scrollview
 description: A new flutter plugin project.
 version: 0.0.1
-author:
-homepage:
+author: Hydrant <qbcbyb@sina.com>
+homepage: https://github.com/qbcbyb/DeckScrollView
 
 environment:
   sdk: ">=2.1.0 <3.0.0"
@@ -10,6 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  vector_math: ^2.0.8
 
 dev_dependencies:
   flutter_test:
