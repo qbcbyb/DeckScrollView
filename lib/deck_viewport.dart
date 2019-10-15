@@ -217,9 +217,7 @@ class RenderDeckViewport extends RenderBox
     markNeedsLayout();
   }
 
-  double get virtualItemExtent {
-    return _virtualItemExtent ?? ((size?.height ?? 0) / maxVisibleItemCount);
-  }
+  double get virtualItemExtent => _virtualItemExtent ?? ((size?.height ?? 0) / maxVisibleItemCount);
 
   double _virtualItemExtent;
   set virtualItemExtent(double value) {
@@ -388,7 +386,8 @@ class RenderDeckViewport extends RenderBox
   }
 
   /// Returns the index of the child at the given offset.
-  int scrollOffsetToIndex(double scrollOffset) => (scrollOffset / virtualItemExtent - firstItemOffsetIndex).floor();
+  int scrollOffsetToIndex(double scrollOffset) =>
+      ((virtualItemExtent == 0 ? 0 : (scrollOffset / virtualItemExtent)) - firstItemOffsetIndex).floor();
 
   /// Returns the scroll offset of the child with the given index.
   double indexToRealScrollOffset(int index) => (index) * virtualItemExtent;
