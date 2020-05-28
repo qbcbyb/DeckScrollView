@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 import 'dart:collection';
 
-import 'package:deck_scrollview/deck_viewport.dart';
+import 'package:deck_scrollview/deck_render.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
-
 import 'package:flutter/widgets.dart';
 
 /// A delegate that supplies children for [DeckScrollView].
@@ -110,7 +109,8 @@ class DeckChildListDelegate extends DeckChildDelegate {
 /// conditions.
 class DeckChildLoopingListDelegate extends DeckChildDelegate {
   /// Constructs the delegate from a concrete list of children.
-  DeckChildLoopingListDelegate({@required this.children}) : assert(children != null);
+  DeckChildLoopingListDelegate({@required this.children})
+      : assert(children != null);
 
   /// The list containing all children that can be supplied.
   final List<Widget> children;
@@ -124,7 +124,8 @@ class DeckChildLoopingListDelegate extends DeckChildDelegate {
   @override
   Widget build(BuildContext context, int index) {
     if (children.isEmpty) return null;
-    return IndexedSemantics(child: children[index % children.length], index: index);
+    return IndexedSemantics(
+        child: children[index % children.length], index: index);
   }
 
   @override
@@ -167,7 +168,9 @@ class DeckChildBuilderDelegate extends DeckChildDelegate {
   Widget build(BuildContext context, int index) {
     if (childCount == null) {
       final Widget child = builder(context, index);
-      return child == null ? null : IndexedSemantics(child: child, index: index);
+      return child == null
+          ? null
+          : IndexedSemantics(child: child, index: index);
     }
     if (index < 0 || index >= childCount) return null;
     return IndexedSemantics(child: builder(context, index), index: index);
@@ -175,7 +178,8 @@ class DeckChildBuilderDelegate extends DeckChildDelegate {
 
   @override
   bool shouldRebuild(covariant DeckChildBuilderDelegate oldDelegate) {
-    return builder != oldDelegate.builder || childCount != oldDelegate.childCount;
+    return builder != oldDelegate.builder ||
+        childCount != oldDelegate.childCount;
   }
 }
 
@@ -208,7 +212,8 @@ class _FixedExtentScrollable extends Scrollable {
 class _FixedExtentScrollableState extends ScrollableState {
   double get itemExtent {
     // Downcast because only _FixedExtentScrollable can make _FixedExtentScrollableState.
-    final _FixedExtentScrollable actualWidget = widget;
+    final _FixedExtentScrollable actualWidget =
+        widget as _FixedExtentScrollable;
     return actualWidget.itemExtent;
   }
 }
@@ -234,7 +239,7 @@ class DeckScrollView extends StatefulWidget {
     this.physics,
     this.layoutPow = 4,
     @required this.itemExtent,
-    @required this.virtualItemExtent,
+    this.deckViewMode = DeckViewMode.deckWhole,
     this.clipToSize = true,
     this.renderChildrenOutsideViewport = false,
     @required List<Widget> children,
@@ -243,8 +248,7 @@ class DeckScrollView extends StatefulWidget {
         assert(layoutPow > 0),
         assert(itemExtent != null),
         assert(itemExtent > 0),
-        assert(virtualItemExtent != null),
-        assert(virtualItemExtent > 0),
+        assert(deckViewMode != null),
         assert(clipToSize != null),
         assert(renderChildrenOutsideViewport != null),
         assert(
@@ -268,7 +272,7 @@ class DeckScrollView extends StatefulWidget {
     this.physics,
     this.layoutPow = 4,
     @required this.itemExtent,
-    this.virtualItemExtent,
+    this.deckViewMode = DeckViewMode.deckWhole,
     this.clipToSize = true,
     this.renderChildrenOutsideViewport = false,
     @required this.childDelegate,
@@ -277,6 +281,7 @@ class DeckScrollView extends StatefulWidget {
         assert(layoutPow > 0),
         assert(itemExtent != null),
         assert(itemExtent > 0),
+        assert(deckViewMode != null),
         assert(clipToSize != null),
         assert(renderChildrenOutsideViewport != null),
         assert(
@@ -317,7 +322,8 @@ class DeckScrollView extends StatefulWidget {
   /// Size of each child in the main axis. Must not be null and must be
   /// positive.
   final double itemExtent;
-  final double virtualItemExtent;
+
+  final DeckViewMode deckViewMode;
 
   /// {@macro flutter.rendering.wheelList.clipToSize}
   final bool clipToSize;
@@ -333,18 +339,11 @@ class DeckScrollView extends StatefulWidget {
 }
 
 class _DeckScrollViewState extends State<DeckScrollView> {
-  int _lastReportedItemIndex = 0;
   ScrollController scrollController;
 
   @override
   void initState() {
     super.initState();
-    // scrollController = widget.controller ?? FixedExtentScrollController();
-
-    // if (widget.controller is FixedExtentScrollController) {
-    //   final FixedExtentScrollController controller = widget.controller;
-    //   _lastReportedItemIndex = controller.initialItem;
-    // }
   }
 
   @override
@@ -361,7 +360,9 @@ class _DeckScrollViewState extends State<DeckScrollView> {
 
   @override
   Widget build(BuildContext context) {
-    scrollController = widget.primary ? PrimaryScrollController.of(context) : widget.controller;
+    scrollController = widget.primary
+        ? PrimaryScrollController.of(context)
+        : widget.controller;
     return _FixedExtentScrollable(
       controller: scrollController,
       physics: widget.physics,
@@ -370,7 +371,7 @@ class _DeckScrollViewState extends State<DeckScrollView> {
         return DeckViewport(
           layoutPow: widget.layoutPow,
           itemExtent: widget.itemExtent,
-          virtualItemExtent: widget.virtualItemExtent,
+          deckViewMode: widget.deckViewMode,
           clipToSize: widget.clipToSize,
           renderChildrenOutsideViewport: widget.renderChildrenOutsideViewport,
           offset: offset,
@@ -387,10 +388,11 @@ class DeckElement extends RenderObjectElement implements DeckChildManager {
   DeckElement(DeckViewport widget) : super(widget);
 
   @override
-  DeckViewport get widget => super.widget;
+  DeckViewport get widget => super.widget as DeckViewport;
 
   @override
-  RenderDeckViewport get renderObject => super.renderObject;
+  RenderDeckViewport get renderObject =>
+      super.renderObject as RenderDeckViewport;
 
   // We inflate widgets at two different times:
   //  1. When we ourselves are told to rebuild (see performRebuild).
@@ -404,7 +406,8 @@ class DeckElement extends RenderObjectElement implements DeckChildManager {
 
   /// The map containing all active child elements. SplayTreeMap is used so that
   /// we have all elements ordered and iterable by their keys.
-  final SplayTreeMap<int, Element> _childElements = SplayTreeMap<int, Element>();
+  final SplayTreeMap<int, Element> _childElements =
+      SplayTreeMap<int, Element>();
 
   @override
   void update(DeckViewport newWidget) {
@@ -413,8 +416,8 @@ class DeckElement extends RenderObjectElement implements DeckChildManager {
     final DeckChildDelegate newDelegate = newWidget.childDelegate;
     final DeckChildDelegate oldDelegate = oldWidget.childDelegate;
     if (newDelegate != oldDelegate &&
-        (newDelegate.runtimeType != oldDelegate.runtimeType || newDelegate.shouldRebuild(oldDelegate)))
-      performRebuild();
+        (newDelegate.runtimeType != oldDelegate.runtimeType ||
+            newDelegate.shouldRebuild(oldDelegate))) performRebuild();
   }
 
   @override
@@ -430,7 +433,8 @@ class DeckElement extends RenderObjectElement implements DeckChildManager {
     final int lastIndex = _childElements.lastKey();
 
     for (int index = firstIndex; index <= lastIndex; ++index) {
-      final Element newChild = updateChild(_childElements[index], retrieveWidget(index), index);
+      final Element newChild =
+          updateChild(_childElements[index], retrieveWidget(index), index);
       if (newChild != null) {
         _childElements[index] = newChild;
       } else {
@@ -445,7 +449,8 @@ class DeckElement extends RenderObjectElement implements DeckChildManager {
   /// will be cached. However when the element is rebuilt, the cache will be
   /// cleared.
   Widget retrieveWidget(int index) {
-    return _childWidgets.putIfAbsent(index, () => widget.childDelegate.build(this, index));
+    return _childWidgets.putIfAbsent(
+        index, () => widget.childDelegate.build(this, index));
   }
 
   @override
@@ -456,7 +461,8 @@ class DeckElement extends RenderObjectElement implements DeckChildManager {
     owner.buildScope(this, () {
       final bool insertFirst = after == null;
       assert(insertFirst || _childElements[index - 1] != null);
-      final Element newChild = updateChild(_childElements[index], retrieveWidget(index), index);
+      final Element newChild =
+          updateChild(_childElements[index], retrieveWidget(index), index);
       if (newChild != null) {
         _childElements[index] = newChild;
       } else {
@@ -479,11 +485,11 @@ class DeckElement extends RenderObjectElement implements DeckChildManager {
 
   @override
   Element updateChild(Element child, Widget newWidget, dynamic newSlot) {
-    final DeckParentData oldParentData = child?.renderObject?.parentData;
+    final oldParentData = child?.renderObject?.parentData as DeckParentData;
     final Element newChild = super.updateChild(child, newWidget, newSlot);
-    final DeckParentData newParentData = newChild?.renderObject?.parentData;
+    final newParentData = newChild?.renderObject?.parentData as DeckParentData;
     if (newParentData != null) {
-      newParentData.index = newSlot;
+      newParentData.index = newSlot as int;
       if (oldParentData != null) newParentData.offset = oldParentData.offset;
     }
 
@@ -492,9 +498,10 @@ class DeckElement extends RenderObjectElement implements DeckChildManager {
 
   @override
   void insertChildRenderObject(RenderObject child, int slot) {
-    final RenderDeckViewport renderObject = this.renderObject;
+    final renderObject = this.renderObject;
     assert(renderObject.debugValidateChild(child));
-    renderObject.insert(child, after: _childElements[slot - 1]?.renderObject);
+    renderObject.insert(child as RenderBox,
+        after: _childElements[slot - 1]?.renderObject as RenderBox);
     assert(renderObject == this.renderObject);
   }
 
@@ -509,7 +516,7 @@ class DeckElement extends RenderObjectElement implements DeckChildManager {
   @override
   void removeChildRenderObject(RenderObject child) {
     assert(child.parent == renderObject);
-    renderObject.remove(child);
+    renderObject.remove(child as RenderBox);
   }
 
   @override
@@ -521,6 +528,7 @@ class DeckElement extends RenderObjectElement implements DeckChildManager {
 
   @override
   void forgetChild(Element child) {
+    super.forgetChild(child);
     _childElements.remove(child.slot);
   }
 }
@@ -552,7 +560,7 @@ class DeckViewport extends RenderObjectWidget {
     Key key,
     @required this.layoutPow,
     @required this.itemExtent,
-    this.virtualItemExtent,
+    this.deckViewMode,
     this.clipToSize = true,
     this.renderChildrenOutsideViewport = false,
     @required this.offset,
@@ -575,7 +583,7 @@ class DeckViewport extends RenderObjectWidget {
 
   /// {@macro flutter.rendering.wheelList.itemExtent}
   final double itemExtent;
-  final double virtualItemExtent;
+  final DeckViewMode deckViewMode;
 
   /// {@macro flutter.rendering.wheelList.clipToSize}
   final bool clipToSize;
@@ -595,25 +603,26 @@ class DeckViewport extends RenderObjectWidget {
 
   @override
   RenderDeckViewport createRenderObject(BuildContext context) {
-    final DeckElement childManager = context;
+    final childManager = context as DeckElement;
     return RenderDeckViewport(
       childManager: childManager,
       offset: offset,
       itemExtent: itemExtent,
-      virtualItemExtent: virtualItemExtent,
       layoutPow: layoutPow,
+      deckViewMode: deckViewMode,
       clipToSize: clipToSize,
       renderChildrenOutsideViewport: renderChildrenOutsideViewport,
     );
   }
 
   @override
-  void updateRenderObject(BuildContext context, RenderDeckViewport renderObject) {
+  void updateRenderObject(
+      BuildContext context, RenderDeckViewport renderObject) {
     renderObject
       ..offset = offset
       ..layoutPow = layoutPow
       ..itemExtent = itemExtent
-      ..virtualItemExtent = virtualItemExtent
+      ..deckViewMode = deckViewMode
       ..clipToSize = clipToSize
       ..renderChildrenOutsideViewport = renderChildrenOutsideViewport;
   }
