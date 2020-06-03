@@ -69,10 +69,7 @@ class RenderBottomDelegate extends DeckRenderDelegate {
     }
     return Matrix4.translationValues(
         0,
-        ((paintingY) / (parentHeight))
-                .clamp(double.negativeInfinity, 1)
-                .toDouble() *
-            parentHeight,
+        ((paintingY) / (parentHeight)).clamp(-1, 1).toDouble() * parentHeight,
         1);
   }
 }

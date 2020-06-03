@@ -66,7 +66,7 @@ class RenderTopDelegate extends DeckRenderDelegate {
         0,
         ((paintingY - maxVisibleCountInDeckRange * viewport.itemExtent) /
                         (parentHeight))
-                    .clamp(0, double.infinity)
+                    .clamp(0, 2)
                     .toDouble() *
                 parentHeight +
             deckOffsetRange,
